@@ -15,7 +15,6 @@ jobs:
         features:
           - ros2
         baseImage:
-          - debian:22.04
           - ubuntu:22.04
           - mcr.microsoft.com/devcontainers/base:ubuntu-22.04
     steps:
