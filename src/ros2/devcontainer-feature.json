@@ -1,7 +1,7 @@
 {
     "name": "ROS 2",
     "id": "ros2",
-    "version": "0.0.1",
+    "version": "v0.1.0",
     "description": "Add ROS2 to your docker image",
     "options": {
         "distro": {
