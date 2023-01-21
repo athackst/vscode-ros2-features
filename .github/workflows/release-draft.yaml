@@ -1,0 +1,59 @@
+name: "Draft release notes and bump versions"
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  update_release_draft:
+    runs-on: ubuntu-latest
+    outputs:
+      tag_name: ${{ steps.release-draft.outputs.tag_name }}
+    steps:
+      # Drafts your next Release notes as Pull Requests are merged into "main"
+      - uses: release-drafter/release-drafter@v5.22.0
+        id: release-draft
+        with:
+          # (Optional) specify config name to use, relative to .github/. Default: release-drafter.yml
+          config-name: release-drafter.yml
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.RELEASEBOT_TOKEN }}
+  update_version:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    needs: update_release_draft
+    steps:
+      - uses: actions/checkout@v3
+      - name: Bump version
+        env:
+          VERSION: ${{ needs.update_release_draft.outputs.tag_name }}
+        run: |
+          set -e
+          echo "Bumping version to ${VERSION}"
+          .github/bump.sh -v ${VERSION} -f src/ros2/devcontainer-feature.json
+      - name: Create PR for version bump
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "Start."
+          # Configure git and Push updates
+          git config --global user.email github-actions@github.com
+          git config --global user.name github-actions
+          git config pull.rebase false
+          branch=automated-version-bump-$GITHUB_RUN_ID
+          git checkout -b $branch
+          message='Automated version bump'
+          # Add / update commit
+          git add */**/devcontainer-feature.json
+          git commit -m 'Automated version update [skip ci]' || export NO_UPDATES=true
+          # Push
+          if [ "$NO_UPDATES" != "true" ] ; then
+              git push origin "$branch"
+              gh pr create --title "$message" --body "$message"
+          fi
