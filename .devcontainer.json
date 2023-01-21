@@ -11,5 +11,10 @@
         "ghcr.io/devcontainers/features/docker-in-docker:2": {}
     },
     "remoteUser": "node",
-    "postCreateCommand": "npm install -g @devcontainers/cli"
+    "postCreateCommand": "npm install -g @devcontainers/cli",
+    // Mount local aliases if any
+	"mounts": [
+		"source=/${env:HOME}/.bash_aliases,target=/home/node/.bash_aliases,type=bind,consistency=cached",
+		"source=/${env:HOME}/.aliases,target=/home/node/.aliases,type=bind,consistency=cached"
+	]
 }
