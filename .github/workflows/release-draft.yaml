@@ -7,6 +7,10 @@ on:
 
 jobs:
   update_release_draft:
+    permissions:
+      # write permission is required to create a github release
+      contents: write
+      pull-requests: read
     runs-on: ubuntu-latest
     outputs:
       tag_name: ${{ steps.release-draft.outputs.tag_name }}
@@ -19,9 +23,7 @@ jobs:
           config-name: release-drafter.yml
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - uses: actions/checkout@v3
-        with:
-          token: ${{ secrets.RELEASEBOT_TOKEN }}
+
   update_version:
     runs-on: ubuntu-latest
     permissions:
